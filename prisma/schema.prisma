@@ -1,0 +1,35 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  chats     Chat[]   @relation("UserChats") // Relación con los chats
+  messages  Message[] // Relación inversa con mensajes
+}
+
+model Chat {
+  id        Int      @id @default(autoincrement())
+  name      String?  // Nombre del chat (puede ser null para chats privados)
+  createdAt DateTime @default(now())
+  members   User[]   @relation("UserChats") // Usuarios en el chat (muchos-a-muchos implícito)
+  messages  Message[] // Mensajes en el chat
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String
+  senderId  Int
+  chatId    Int
+  createdAt DateTime @default(now())
+  sender    User     @relation(fields: [senderId], references: [id])
+  chat      Chat     @relation(fields: [chatId], references: [id])
+}
