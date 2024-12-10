@@ -8,28 +8,32 @@ generator client {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  chats     Chat[]   @relation("UserChats") // Relación con los chats
-  messages  Message[] // Relación inversa con mensajes
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  password  String    
+  avatarUrl String?
+  createdAt DateTime  @default(now())
+  chats     Chat[]    @relation("UserChats")
+  messages  Message[]
 }
 
 model Chat {
-  id        Int      @id @default(autoincrement())
-  name      String?  // Nombre del chat (puede ser null para chats privados)
-  createdAt DateTime @default(now())
-  members   User[]   @relation("UserChats") // Usuarios en el chat (muchos-a-muchos implícito)
-  messages  Message[] // Mensajes en el chat
+  id            Int       @id @default(autoincrement())
+  name          String?
+  createdAt     DateTime  @default(now())
+  members       User[]    @relation("UserChats")
+  messages      Message[]
+  lastMessageId Int?      @unique
+  lastMessage   Message?  @relation("LastMessage", fields: [lastMessageId], references: [id])
 }
 
 model Message {
-  id        Int      @id @default(autoincrement())
-  content   String
-  senderId  Int
-  chatId    Int
-  createdAt DateTime @default(now())
-  sender    User     @relation(fields: [senderId], references: [id])
-  chat      Chat     @relation(fields: [chatId], references: [id])
+  id         Int      @id @default(autoincrement())
+  content    String
+  senderId   Int
+  chatId     Int
+  createdAt  DateTime @default(now())
+  sender     User     @relation(fields: [senderId], references: [id])
+  chat       Chat     @relation(fields: [chatId], references: [id])
+  chatAsLast Chat?    @relation("LastMessage") // Relación inversa
 }
