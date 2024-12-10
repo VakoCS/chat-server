@@ -18,22 +18,15 @@ export const socketHandler = (io) => {
           data: {
             content: messageData.content,
             chatId: parseInt(messageData.chatId, 10),
-            senderId: parseInt(messageData.senderId, 10), // Asegurarse de que sea número
+            senderId: parseInt(messageData.senderId, 10),
           },
           include: {
             sender: true,
           },
         });
-
-        // Log para debugging
-        console.log(
-          `Emitiendo mensaje a sala chat-${messageData.chatId}:`,
-          message
-        );
-
-        // Emitir a la sala específica
-        const room = `chat-${messageData.chatId}`;
-        io.in(room).emit("new-message", message);
+    
+        // Emitir a todos los clientes
+        io.emit("new-message", message);
       } catch (error) {
         console.error("Error guardando el mensaje:", error);
         socket.emit("message-error", {
