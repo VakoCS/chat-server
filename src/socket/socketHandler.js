@@ -1,8 +1,10 @@
 import prisma from "../models/prismaClient.js";
 
+// socketHandler.js
 export const socketHandler = (io) => {
   io.on("connection", (socket) => {
     console.log("Usuario conectado:", socket.id);
+    console.log("Dirección IP:", socket.handshake.address);
 
     socket.on("join-chat", (chatId) => {
       const room = `chat-${chatId}`;
@@ -14,6 +16,8 @@ export const socketHandler = (io) => {
 
     socket.on("send-message", async (messageData) => {
       try {
+        console.log("Mensaje recibido:", messageData);
+
         const message = await prisma.message.create({
           data: {
             content: messageData.content,
@@ -24,11 +28,11 @@ export const socketHandler = (io) => {
             sender: true,
           },
         });
-    
-        // Emitir a todos los clientes
+
+        console.log("Mensaje guardado:", message);
         io.emit("new-message", message);
       } catch (error) {
-        console.error("Error guardando el mensaje:", error);
+        console.error("Error procesando mensaje:", error);
         socket.emit("message-error", {
           error: "Error al guardar el mensaje",
           content: messageData.content,
@@ -36,8 +40,12 @@ export const socketHandler = (io) => {
       }
     });
 
-    socket.on("disconnect", () => {
-      console.log("Usuario desconectado:", socket.id);
+    socket.on("disconnect", (reason) => {
+      console.log(`Usuario desconectado (${socket.id}). Razón: ${reason}`);
+    });
+
+    socket.on("error", (error) => {
+      console.error("Error en socket:", error);
     });
   });
 };
