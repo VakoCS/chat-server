@@ -10,7 +10,7 @@ generator client {
 model User {
   id        Int       @id @default(autoincrement())
   username  String    @unique
-  password  String    
+  password  String
   avatarUrl String?
   createdAt DateTime  @default(now())
   chats     Chat[]    @relation("UserChats")
@@ -28,12 +28,15 @@ model Chat {
 }
 
 model Message {
-  id         Int      @id @default(autoincrement())
-  content    String
-  senderId   Int
-  chatId     Int
-  createdAt  DateTime @default(now())
-  sender     User     @relation(fields: [senderId], references: [id])
-  chat       Chat     @relation(fields: [chatId], references: [id])
-  chatAsLast Chat?    @relation("LastMessage") // Relación inversa
+  id            Int      @id @default(autoincrement())
+  content       String // Contenido del mensaje o URL del archivo
+  type          String   @default("text") // "text", "image", "audio"
+  senderId      Int
+  chatId        Int
+  createdAt     DateTime @default(now())
+  audioDuration Float? // Duración en segundos
+
+  sender     User  @relation(fields: [senderId], references: [id])
+  chat       Chat  @relation(fields: [chatId], references: [id])
+  chatAsLast Chat? @relation("LastMessage")
 }

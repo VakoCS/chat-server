@@ -120,21 +120,45 @@ export const getUserChats = async (req, res) => {
           orderBy: {
             createdAt: "desc",
           },
-          include: {
-            sender: true,
+          select: {
+            id: true,
+            content: true,
+            type: true,
+            createdAt: true,
+            senderId: true,
+            sender: {
+              select: {
+                id: true,
+                username: true,
+                avatarUrl: true,
+              },
+            },
           },
         },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: "desc", // Ordenamos por la fecha de creación del chat
       },
     });
 
     // Transformar los chats para tener el formato correcto
-    const formattedChats = chats.map((chat) => ({
-      ...chat,
-      lastMessage: chat.messages[0] || null,
-    }));
+    const formattedChats = chats.map((chat) => {
+      const lastMessage = chat.messages[0];
+      if (!lastMessage) return { ...chat, lastMessage: null };
+
+      return {
+        ...chat,
+        lastMessage: {
+          ...lastMessage,
+          content:
+            lastMessage.type === "text"
+              ? lastMessage.content
+              : lastMessage.type === "image"
+              ? "📸 Foto"
+              : "🎤 Mensaje de voz",
+        },
+      };
+    });
 
     res.json(formattedChats);
   } catch (error) {
